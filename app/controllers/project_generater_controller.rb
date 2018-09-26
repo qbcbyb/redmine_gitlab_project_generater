@@ -45,7 +45,7 @@ class ProjectGeneraterController < ApplicationController
             success_urls.append http_url_to_repo
 
             source_project_namespace = ERB::Util.url_encode(source_path[1, source_path_dot_rindex - 1])
-            Net::HTTP.get(URI.join(source_remote_url, "/api/v#{source_gitlab_api_version}/projects/#{source_project_namespace}/archive?access_token=#{access_token}"))
+            Net::HTTP.post(URI.join(source_remote_url, "/api/v#{source_gitlab_api_version}/projects/#{source_project_namespace}/archive?access_token=#{access_token}"), {})
           rescue
             error_projects.append new_project_name
           end
