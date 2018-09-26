@@ -72,8 +72,12 @@ class ProjectGeneraterController < ApplicationController
 
     g = Gitlab.client(endpoint: URI.join(remote_url, "/api/v#{gitlab_api_version}").to_s, private_token: gitlab_token_value)
 
-    g_projects = g.projects(per_page: 100).auto_paginate
-    render(:json => g_projects)
+    begin
+      g_projects = g.projects(per_page: 100).auto_paginate
+      render(:json => g_projects)
+    rescue => ex
+      render(:json => {:message => "获取项目失败：#{ex.message}"})
+    end
   end
 
   def gitlab_oauth

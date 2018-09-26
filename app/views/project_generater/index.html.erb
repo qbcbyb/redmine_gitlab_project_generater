@@ -4,9 +4,7 @@
 
 <p>
   <%= link_to project_generater_oauth_path do %>
-    <%= button_tag do %>
-      <%= content_tag :div, "Gitlab OAuth" %>
-    <% end %>
+    <input type="button" value="Gitlab OAuth"/>
   <% end %>
   <input id="sourceFetcher" type="button" value="Fetch Source Project"/>
 </p>
@@ -36,6 +34,10 @@
         });
         $('#sourceFetcher').click(function () {
             $.post('<%=project_generater_source_path %>', $("#project_generater_form").serialize(), function (result) {
+                if (!result || result.message) {
+                    alert(result.message || '获取项目失败');
+                    return;
+                }
                 let $sourceUrl = $('#source_url');
                 result.forEach(function (opt) {
                     $sourceUrl.append($(`<option value="${opt.http_url_to_repo}">${opt.path_with_namespace}</option>`))
