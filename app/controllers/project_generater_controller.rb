@@ -23,7 +23,8 @@ class ProjectGeneraterController < ApplicationController
       import_urls = params[:import_url]
       access_token = session[:gitlab_source_token]
       if import_urls
-        results = []
+        success_urls = []
+        error_projects = []
         import_urls.each do |import_url|
           namespace = params[:namespace]
           if import_url.empty? || namespace.empty?
@@ -35,16 +36,21 @@ class ProjectGeneraterController < ApplicationController
           source_path = uri.path
           source_path_slash_rindex = source_path.rindex('/')
           new_project_name = source_path[source_path_slash_rindex + 1, source_path.rindex('.') - 1 - source_path_slash_rindex]
-
-          res = g.create_project new_project_name, :import_url => uri.to_s, :visibility => 'private', :namespace_id => namespace
-          http_url_to_repo = res.http_url_to_repo
-          unless http_url_to_repo
-            flash.now[:error] = res
-            return
+          begin
+            res = g.create_project new_project_name, :import_url => uri.to_s, :visibility => 'private', :namespace_id => namespace
+            http_url_to_repo = res.http_url_to_repo
+            success_urls.append http_url_to_repo
+          rescue
+            error_projects.append new_project_name
           end
-          results.append http_url_to_repo
         end
-        flash.now[:notice] = "Create project success, Url is: #{results.join ","}"
+        if error_projects.empty?
+          flash.now[:notice] = "Create project success, Url is: #{success_urls.join ","}"
+        elsif success_urls.empty?
+          flash.now[:error] = "Create project fail, Error Project is: #{error_projects.join ","}"
+        else
+          flash.now[:warning] = "Create project partially success, Successful Url is: #{success_urls.join ","}, Error Project is: #{error_projects.join ","}"
+        end
       end
     end
     begin
