@@ -47,7 +47,7 @@ class ProjectGeneraterController < ApplicationController
 
             source_project_namespace = ERB::Util.url_encode(source_path[1, source_path_dot_rindex - 1])
             source_archive_uri = URI.join(source_remote_url, "/api/v#{source_gitlab_api_version}/projects/#{source_project_namespace}/archive?access_token=#{access_token}")
-            Net::HTTP.post(source_archive_uri, '')
+            Net::HTTP.post(source_archive_uri, '').body
           rescue => ex
             error_projects.append new_project_name
             logger.error {"GitLab Project Generater: Project '#{new_project_name}' has error: #{ex.message}, Archive url: #{source_archive_uri if source_archive_uri}"}
