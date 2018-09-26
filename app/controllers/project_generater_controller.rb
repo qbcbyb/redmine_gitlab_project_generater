@@ -22,6 +22,8 @@ class ProjectGeneraterController < ApplicationController
     if request.post?
       import_urls = params[:import_url]
       access_token = session[:gitlab_source_token]
+      source_remote_url = settings['git_remote_url']
+      source_gitlab_api_version = settings['gitlab_api_v4'] ? 4 : 3
       if import_urls
         success_urls = []
         error_projects = []
@@ -35,11 +37,15 @@ class ProjectGeneraterController < ApplicationController
           uri.userinfo = "oauth2:#{access_token}"
           source_path = uri.path
           source_path_slash_rindex = source_path.rindex('/')
-          new_project_name = source_path[source_path_slash_rindex + 1, source_path.rindex('.') - 1 - source_path_slash_rindex]
+          source_path_dot_rindex = source_path.rindex('.')
+          new_project_name = source_path[source_path_slash_rindex + 1, source_path_dot_rindex - 1 - source_path_slash_rindex]
           begin
             res = g.create_project new_project_name, :import_url => uri.to_s, :visibility => 'private', :namespace_id => namespace
             http_url_to_repo = res.http_url_to_repo
             success_urls.append http_url_to_repo
+
+            source_project_namespace = ERB::Util.url_encode(source_path[1, source_path_dot_rindex - 1])
+            Net::HTTP.get(URI.join(source_remote_url, "/api/v#{source_gitlab_api_version}/projects/#{source_project_namespace}/archive?access_token=#{access_token}"))
           rescue
             error_projects.append new_project_name
           end

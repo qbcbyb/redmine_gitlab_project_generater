@@ -21,6 +21,7 @@
   下
 </p>
 <%= button_tag "确定" %>
+<em class="info">警告：该操作会对原Gitlab项目进行Archive(标记只读)操作，将无法再对原项目进行Commit，该配置可在原Gitlab项目中修改</em>
 <script>
     $(function () {
         $("#project_generater_form").submit(function (e) {
