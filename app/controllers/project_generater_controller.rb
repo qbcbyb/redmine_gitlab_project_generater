@@ -39,16 +39,18 @@ class ProjectGeneraterController < ApplicationController
           source_path_slash_rindex = source_path.rindex('/')
           source_path_dot_rindex = source_path.rindex('.')
           new_project_name = source_path[source_path_slash_rindex + 1, source_path_dot_rindex - 1 - source_path_slash_rindex]
+
           begin
             res = g.create_project new_project_name, :import_url => uri.to_s, :visibility => 'private', :namespace_id => namespace
             http_url_to_repo = res.http_url_to_repo
             success_urls.append http_url_to_repo
 
             source_project_namespace = ERB::Util.url_encode(source_path[1, source_path_dot_rindex - 1])
-            Net::HTTP.post(URI.join(source_remote_url, "/api/v#{source_gitlab_api_version}/projects/#{source_project_namespace}/archive?access_token=#{access_token}"), '')
+            source_archive_uri = URI.join(source_remote_url, "/api/v#{source_gitlab_api_version}/projects/#{source_project_namespace}/archive?access_token=#{access_token}")
+            Net::HTTP.post(source_archive_uri, '')
           rescue => ex
             error_projects.append new_project_name
-            logger.error {"GitLab Project Generater: Project '#{new_project_name}' has error: #{ex.message}"}
+            logger.error {"GitLab Project Generater: Project '#{new_project_name}' has error: #{ex.message}, Archive url: #{source_archive_uri if source_archive_uri}"}
           end
         end
         if error_projects.empty?
