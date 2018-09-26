@@ -1,0 +1,24 @@
+<fieldset>
+  <legend><%= l(:git_pull_type) %></legend>
+
+  <p>
+    <label>OAuth Callback Url:</label>
+    <%= text_field_tag nil, (Setting.protocol + "://" + Setting.host_name + project_generater_oauth_callback_path), :readonly => true, :size => 50 %>
+  </p>
+  <p>
+    <label>Git Remote Url:</label>
+    <%= text_field_tag('settings[git_remote_url]', settings['git_remote_url'], :size => 50) %>
+  </p>
+  <p>
+    <label>Client ID:</label>
+    <%= text_field_tag 'settings[client_id]', @settings['client_id'] %>
+  </p>
+  <p>
+    <label>Client Secret:</label>
+    <%= text_field_tag 'settings[client_secret]', @settings['client_secret'] %>
+  </p>
+  <p>
+    <label>Gitlab v4 enable:</label>
+    <%= check_box_tag 'settings[gitlab_api_v4]', true, @settings['gitlab_api_v4'] %>
+  </p>
+</fieldset>

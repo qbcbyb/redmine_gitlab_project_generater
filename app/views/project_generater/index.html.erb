@@ -1,0 +1,46 @@
+<% html_title(l(:gitlab_project_generater)) -%>
+
+<h1><%= l(:gitlab_project_generater) %></h1>
+
+<p>
+  <%= link_to project_generater_oauth_path do %>
+    <%= button_tag do %>
+      <%= content_tag :div, "Gitlab OAuth" %>
+    <% end %>
+  <% end %>
+  <input id="sourceFetcher" type="button" value="Fetch Source Project"/>
+</p>
+
+<%= form_tag project_generater_path, :id => "project_generater_form" %>
+<p>
+  <%= select_tag nil, nil, :id => 'source_url', :size => 10, :style => "min-width: 140px;" %>
+  =>
+  <%= select_tag :import_url, (options_for_select(@_params.fetch(:import_url, [])) if @_params.present?), :size => 10, :style => "min-width: 140px;", :multiple => true %>
+</p>
+<p>
+  将选中项目导入至
+  <%= select_tag :namespace, (options_for_select(@namespaces.map {|op| [op.path, op.id]}, (@_params.fetch(:namespace, nil) if @_params.present?)) if @namespaces) %>
+  下
+</p>
+<%= button_tag "确定" %>
+<script>
+    $(function () {
+        $("#project_generater_form").submit(function (e) {
+            $('#import_url option').attr('selected', true);
+        });
+        $('#source_url').dblclick(function (e) {
+            const target = e.target;
+            if (target && target.tagName === 'OPTION') {
+                $('#import_url').append($(target).remove());
+            }
+        });
+        $('#sourceFetcher').click(function () {
+            $.post('<%=project_generater_source_path %>', $("#project_generater_form").serialize(), function (result) {
+                let $sourceUrl = $('#source_url');
+                result.forEach(function (opt) {
+                    $sourceUrl.append($(`<option value="${opt.http_url_to_repo}">${opt.path_with_namespace}</option>`))
+                })
+            });
+        });
+    })
+</script>
